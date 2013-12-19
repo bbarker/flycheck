@@ -3253,6 +3253,8 @@ Demote Rubocop convention messages to @code{info} level
 @ghissue{282, Stop Flycheck before the buffer is reverted}
 @item
 Properly resolve local module imports in @code{haskell-ghc}
+@item
+@ghissue{278, Support @code{motion-mode} in Ruby syntax checkers}
 @end itemize
 
 @item

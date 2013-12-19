@@ -4341,7 +4341,7 @@ See URL `http://batsov.com/rubocop/'."
    (error line-start
           (file-name) ":" line ":" column ": " (or "E" "F") ": " (message)
           line-end))
-  :modes (enh-ruby-mode ruby-mode)
+  :modes (ruby-mode enh-ruby-mode motion-mode)
   :next-checkers ((warnings-only . ruby-rubylint)))
 
 (flycheck-define-checker ruby-rubylint
@@ -4356,7 +4356,7 @@ See URL `https://github.com/YorickPeterse/ruby-lint'."
             (file-name) ":W:" line ":" column ": " (message) line-end)
    (error line-start
           (file-name) ":E:" line ":" column ": " (message) line-end))
-  :modes (enh-ruby-mode ruby-mode))
+  :modes (ruby-mode enh-ruby-mode motion-mode))
 
 (flycheck-define-checker ruby
   "A Ruby syntax checker using the standard Ruby interpreter.
@@ -4380,7 +4380,7 @@ See URL `http://www.ruby-lang.org/'."
             (file-name) ":" line ":" (optional column ":")
             " warning: " (message) line-end)
    (error line-start (file-name) ":" line ": " (message) line-end))
-  :modes (enh-ruby-mode ruby-mode)
+  :modes (ruby-mode enh-ruby-mode motion-mode)
   :next-checkers ((warnings-only . ruby-rubylint)))
 
 (flycheck-define-checker ruby-jruby
@@ -4399,7 +4399,7 @@ See URL `http://jruby.org/'."
           line-end)
    (warning line-start (file-name) ":" line " warning: " (message) line-end)
    (error line-start (file-name) ":" line ": " (message) line-end))
-  :modes (enh-ruby-mode ruby-mode)
+  :modes (ruby-mode enh-ruby-mode motion-mode)
   :next-checkers ((warnings-only . ruby-rubylint)))
 
 (flycheck-define-checker rust

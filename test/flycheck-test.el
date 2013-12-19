@@ -2893,6 +2893,8 @@ of the file will be interrupted because there are too many #ifdef configurations
 (defvar js2-mode-show-parse-errors)
 (defvar js3-mode-show-parse-errors)
 (defvar python-indent-guess-indent-offset)
+(defvar motion-rake-task-list-cache)
+(defvar motion-flymake)
 
 (ert-deftest flycheck-define-checker/asciidoc ()
   :tags '(builtin-checker external-tool language-asciidoc)
@@ -3729,28 +3731,39 @@ Why not:
    '(21 nil error "Unknown target name: \"cool\"." :checker rst)
    '(26 nil error "Unexpected section title." :checker rst)))
 
+;; In the following Ruby test cases, we set the internal variable
+;; `motion-rake-task-list-cache' to stop `motion-mode' from aggressively caching
+;; Rake tasks, which we obviously don't have in our test case resources.  Also,
+;; we tell it to not enable Flymake
+
 (ert-deftest flycheck-define-checker/ruby-rubocop-syntax-error ()
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (flycheck-check-executable 'ruby-rubocop))
-  (flycheck-test-should-syntax-check
-   "checkers/ruby-syntax-error.rb" 'ruby-mode
-   '(5 7 error "unexpected token tCONSTANT" :checker ruby-rubocop)
-   '(5 24 error "unterminated string meets end of file" :checker ruby-rubocop)))
+  (let ((motion-rake-task-list-cache t)
+        (motion-flymake nil))
+    (flycheck-test-should-syntax-check
+     "checkers/ruby-syntax-error.rb" '(ruby-mode motion-mode)
+     '(5 7 error "unexpected token tCONSTANT" :checker ruby-rubocop)
+     '(5 24 error "unterminated string meets end of file" :checker ruby-rubocop))))
 
 (ert-deftest flycheck-define-checker/ruby-rubylint-syntax-error ()
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (flycheck-check-executable 'ruby-rubocop))
-  (let ((flycheck-disabled-checkers '(ruby-rubocop)))
+  (let ((flycheck-disabled-checkers '(ruby-rubocop))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-syntax-error.rb" 'ruby-mode
+     "checkers/ruby-syntax-error.rb" '(ruby-mode motion-mode)
      '(5 7 error "unexpected token tCONSTANT" :checker ruby-rubylint))))
 
 (ert-deftest flycheck-define-checker/ruby-syntax-error ()
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (flycheck-check-executable 'ruby))
-  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint)))
+  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-syntax-error.rb" 'ruby-mode
+     "checkers/ruby-syntax-error.rb" '(ruby-mode motion-mode)
      '(5 nil error "syntax error, unexpected tCONSTANT, expecting $end"
          :checker ruby))))
 
@@ -3759,17 +3772,21 @@ Why not:
   :expected-result '(or (satisfies flycheck-test-failed-on-travis-ci-p)
                         :passed)
   (skip-unless (flycheck-check-executable 'ruby-jruby))
-  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint ruby)))
+  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint ruby))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-syntax-error.rb" 'ruby-mode
+     "checkers/ruby-syntax-error.rb" '(ruby-mode motion-mode)
      '(5 nil error "syntax error, unexpected tCONSTANT" :checker ruby-jruby))))
 
 (ert-deftest flycheck-define-checker/ruby-rubocop-and-ruby-lint ()
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (-all? #'flycheck-check-executable '(ruby-rubocop
                                                     ruby-rubylint)))
-  (flycheck-test-should-syntax-check
-     "checkers/ruby-warnings.rb" 'ruby-mode
+  (let ((motion-rake-task-list-cache t)
+        (motion-flymake nil))
+    (flycheck-test-should-syntax-check
+     "checkers/ruby-warnings.rb" '(ruby-mode motion-mode)
      '(1 1 info "Missing utf-8 encoding comment." :checker ruby-rubocop)
      '(4 18 warning "unused argument name" :checker ruby-rubylint)
      '(5 5 warning "unused local variable arr" :checker ruby-rubylint)
@@ -3786,15 +3803,17 @@ Why not:
           :checker ruby-rubocop)
      '(11 24 error "undefined instance variable @name" :checker ruby-rubylint)
      '(16 1 error "wrong number of arguments (expected 2..3 but got 0)"
-          :checker ruby-rubylint)))
+          :checker ruby-rubylint))))
 
 (ert-deftest flycheck-define-checker/ruby-rubocop-disabled-warning ()
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (flycheck-check-executable 'ruby-rubocop))
   (let ((flycheck-rubocoprc "rubocop.yml")
-        (flycheck-disabled-checkers '(ruby-rubylint)))
+        (flycheck-disabled-checkers '(ruby-rubylint))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-warnings.rb" 'ruby-mode
+     "checkers/ruby-warnings.rb" '(ruby-mode motion-mode)
      '(1 1 info "Missing utf-8 encoding comment." :checker ruby-rubocop)
      '(5 5 warning "Useless assignment to variable - arr" :checker ruby-rubocop)
      '(6 10 info "Prefer single-quoted strings when you don't need string interpolation or special symbols."
@@ -3810,9 +3829,11 @@ Why not:
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (flycheck-check-executable 'ruby-rubocop))
   (let ((flycheck-rubocop-lint-only t)
-        (flycheck-disabled-checkers '(ruby-rubylint)))
+        (flycheck-disabled-checkers '(ruby-rubylint))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-warnings.rb" 'ruby-mode
+     "checkers/ruby-warnings.rb" '(ruby-mode motion-mode)
      '(5 5 warning "Useless assignment to variable - arr" :checker ruby-rubocop)
      '(10 8 warning "Literal true appeared in a condition."
           :checker ruby-rubocop))))
@@ -3820,9 +3841,11 @@ Why not:
 (ert-deftest flycheck-define-checker/ruby-warnings ()
   :tags '(builtin-checker external-tool language-ruby)
   (skip-unless (flycheck-check-executable 'ruby))
-  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint)))
+  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-warnings.rb" 'ruby-mode
+     "checkers/ruby-warnings.rb" '(ruby-mode motion-mode)
      '(5 nil warning "assigned but unused variable - arr" :checker ruby)
      '(16 nil warning "possibly useless use of == in void context"
           :checker ruby))))
@@ -3832,9 +3855,11 @@ Why not:
   :expected-result '(or (satisfies flycheck-test-failed-on-travis-ci-p)
                         :passed)
   (skip-unless (flycheck-check-executable 'ruby-jruby))
-  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint ruby)))
+  (let ((flycheck-disabled-checkers '(ruby-rubocop ruby-rubylint ruby))
+        (motion-rake-task-list-cache t)
+        (motion-flymake nil))
     (flycheck-test-should-syntax-check
-     "checkers/ruby-warnings.rb" 'ruby-mode
+     "checkers/ruby-warnings.rb" '(ruby-mode motion-mode)
      '(16 nil warning "Useless use of == in void context."
           :checker ruby-jruby))))
 
