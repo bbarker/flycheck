@@ -132,6 +132,7 @@ buffer-local wherever it is set."
 
 (defcustom flycheck-checkers
   '(asciidoc
+    ats2
     bash
     c/c++-clang
     c/c++-cppcheck
@@ -4340,6 +4341,21 @@ See URL `http://pypi.python.org/pypi/pylint'."
    (info line-start (file-name) ":" line ":" column ":"
          "C:" (message) line-end))
   :modes python-mode)
+
+(flycheck-define-checker ats2
+  "A simple ATS2 checker using patscc."
+  ;:command ("patscc" "-tc" source)
+  :command ("patsopt" "--output" "flycheckats.c" "--dynamic" source)
+  :error-patterns
+  ((error line-start (file-name) "line=" line "offs=" column 
+          "error(" (message) line-end)
+  ; (warning line-start (file-name) ":" line ":" column ":"
+  ;          (or "W" "R") ":" (message) line-end)
+  ; (info line-start (file-name) ":" line ":" column ":"
+  ;       "C:" (message) line-end)
+  )
+  :modes (ats-two-mode-mode ats/c-mode ATS2 ats-mode))
+
 
 (flycheck-define-checker racket
   "A Racket syntax checker using the Racket compiler.
